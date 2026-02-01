@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/frontend/**'
+      - 'src/backend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/frontend/**'
+      - 'src/backend/**'
+
+jobs:
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: src/frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run frontend tests
+        run: npm test -- --watchAll=false --ci
+
+      - name: Skip if no frontend changes
+        if: ${{ !contains(github.event.head_commit.message, 'frontend') }}
+        run: echo "No frontend changes detected, skipping..."
+
+
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, intl, pdo_mysql, xdebug
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-interaction
+
+      - name: Run PHPStan (static analysis)
+        run: vendor/bin/phpstan analyse src
+
+      - name: Run Symfony tests
+        run: |
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:schema:create --env=test
+          php bin/phpunit --colors=always
+
+      - name: Skip if no backend changes
+        if: ${{ !contains(github.event.head_commit.message, 'backend') }}
+        run: echo "No backend changes detected, skipping..."
