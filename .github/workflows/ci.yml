@@ -70,10 +70,7 @@ jobs:
         run: vendor/bin/phpstan analyse .
 
       - name: Run Symfony tests
-        run: |
-          php bin/console doctrine:database:create --env=test --if-not-exists
-          php bin/console doctrine:schema:create --env=test
-          php bin/phpunit --colors=always
+        run: vendor/bin/phpunit
 
       - name: Skip if no backend changes
         if: ${{ !contains(github.event.head_commit.message, 'backend') }}
