@@ -5,3 +5,4 @@ parameters:
     excludePaths:
         - %currentWorkingDirectory%/vendor/*
         - %currentWorkingDirectory%/tests/*
+        - var/cache/*
