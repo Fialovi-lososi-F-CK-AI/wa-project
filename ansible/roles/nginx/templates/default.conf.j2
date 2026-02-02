@@ -1,0 +1,38 @@
+server {
+    listen 80;
+
+    server_name {{ ansible_fqdn | default('localhost') }};
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://app_backend:{{ backend_port }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /grafana/ {
+        proxy_pass http://grafana:{{ grafana_port }};
+        proxy_redirect / /grafana/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /prometheus/ {
+        proxy_pass http://prometheus:{{ prometheus_port }};
+        proxy_redirect / /prometheus/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    error_log /var/log/nginx/error.log warn;
+    access_log /var/log/nginx/access.log;
+}

@@ -1,0 +1,17 @@
+- name: Setup and deploy server
+  hosts: all
+  become: true
+  vars_files:
+    - secrets.yml
+  roles:
+    - common
+    - users
+    - ssh_hardening
+    - docker
+    - app
+    - postgres
+    #- backend
+    - nginx
+    #- certbot
+    - monitoring
+    - ufw

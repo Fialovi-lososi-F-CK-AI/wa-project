@@ -1,7 +1,7 @@
-name: CI backend dev
+name: CD backend dev
 
 on:
-  pull_request:
+  push:
     branches:
       - main
     paths:
