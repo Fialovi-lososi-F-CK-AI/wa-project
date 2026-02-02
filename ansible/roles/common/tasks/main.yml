@@ -1,0 +1,11 @@
+- name: Ensure required directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: 0755
+  loop:
+    - /opt/app
+    - "{{ postgres_data_path }}"
+    - /opt/prometheus

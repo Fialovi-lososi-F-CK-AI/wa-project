@@ -1,0 +1,62 @@
+- name: Ensure Prometheus config dir exists
+  file:
+    path: /opt/prometheus
+    state: directory
+    owner: 65534
+    group: 65534
+    mode: "0755"
+
+- name: Render prometheus.yml from template
+  template:
+    src: ../templates/prometheus.yml.j2
+    dest: /opt/prometheus/prometheus.yml
+    owner: 65534
+    group: 65534
+    mode: "0644"
+
+- name: Ensure Prometheus data directory exists
+  file:
+    path: /opt/prometheus/data
+    state: directory
+    owner: 65534
+    group: 65534
+    mode: "0755"
+
+- name: Check prometheus.yml exists and is a file
+  stat:
+    path: /opt/prometheus/prometheus.yml
+  register: prometheus_config
+
+- name: Fail if prometheus.yml is missing or not a file
+  fail:
+    msg: "/opt/prometheus/prometheus.yml must exist and be a file before starting container"
+  when: not prometheus_config.stat.exists or prometheus_config.stat.isreg is not defined or not prometheus_config.stat.isreg
+
+- name: Run Prometheus container
+  docker_container:
+    name: prometheus
+    image: prom/prometheus:v3.9.1
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ prometheus_port }}:9090"
+    volumes:
+      - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /opt/prometheus/data:/prometheus
+    networks:
+      - name: monitoring
+
+- name: Run Grafana container
+  docker_container:
+    name: grafana
+    image: grafana/grafana:12.3-ubuntu
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ grafana_port }}:3000"
+    env:
+      GF_SECURITY_ADMIN_PASSWORD: "{{ vault_grafana_password }}"
+      GF_SERVER_ROOT_URL: "http://192.168.1.167:{{ grafana_port }}"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    volumes:
+      - /opt/grafana:/var/lib/grafana

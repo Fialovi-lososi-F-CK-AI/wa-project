@@ -1,0 +1,25 @@
+- name: Run Nginx container
+  docker_container:
+    name: nginx
+    image: nginx:alpine
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ nginx_port }}:80"
+    volumes:
+      - /opt/app:/usr/share/nginx/html:ro
+      - /etc/nginx/conf.d:/etc/nginx/conf.d:ro
+    networks:
+      - name: monitoring
+
+- name: Run Nginx Prometheus exporter container
+  docker_container:
+    name: nginx_exporter
+    image: nginx/nginx-prometheus-exporter:edge
+    state: started
+    restart_policy: always
+    command: -nginx.scrape-uri http://nginx:80/nginx_status
+    ports:
+      - "9113:9113"
+    networks:
+      - name: monitoring
