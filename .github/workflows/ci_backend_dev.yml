@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  backend:
+  backend-ci-dev:
     name: Backend CI dev
     runs-on: [self-hosted]
 
