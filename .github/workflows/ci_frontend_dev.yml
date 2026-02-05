@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  frontend:
+  frontend-ci-dev:
     name: Frontend CI dev
     runs-on: [self-hosted]
 
