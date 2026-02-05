@@ -6,7 +6,7 @@ on:
 
 jobs:
   backend:
-    name: Backend CI
+    name: Backend CI dev
     runs-on: [self-hosted]
 
     defaults:
