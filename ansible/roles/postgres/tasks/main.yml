@@ -1,0 +1,29 @@
+- name: Run Postgres container
+  docker_container:
+    name: postgres
+    image: postgres:15
+    state: started
+    restart_policy: always
+    env:
+      POSTGRES_USER: "{{ postgres_user }}"
+      POSTGRES_PASSWORD: "{{ postgres_password }}"
+      POSTGRES_DB: "{{ postgres_db }}"
+    ports:
+      - "{{ postgres_port }}:5432"
+    volumes:
+      - "{{ postgres_data_path }}:/var/lib/postgresql/data"
+    networks:
+      - name: monitoring
+
+- name: Run Postgres exporter container
+  docker_container:
+    name: postgres_exporter
+    image: prometheuscommunity/postgres-exporter:latest
+    state: started
+    restart_policy: always
+    env:
+      DATA_SOURCE_NAME: "postgresql://{{ postgres_user }}:{{ postgres_password }}@postgres:5432/{{ postgres_db }}?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - name: monitoring

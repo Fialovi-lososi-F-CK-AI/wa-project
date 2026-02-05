@@ -1,0 +1,19 @@
+- name: Build backend image
+  docker_image:
+    path: /opt/app/backend
+    name: myorg/backend
+    tag: latest
+    source: build
+
+- name: Run backend container (zero-downtime)
+  docker_container:
+    name: backend
+    image: "{{ backend_image }}"
+    state: started
+    restart_policy: always
+    env: "{{ backend_env }}"
+    ports:
+      - "{{ backend_port }}:8080"
+    volumes:
+      - /opt/app/backend/data:/app/data
+    recreate: yes

@@ -1,0 +1,7 @@
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://app_prometheus:{{ prometheus_port }}
+    isDefault: true

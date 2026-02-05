@@ -1,0 +1,20 @@
+nginx_port: 8080
+
+postgres_port: 5432
+postgres_user: prod_user
+postgres_password: "{{ vault_postgres_password }}"  
+postgres_db: prod_db
+postgres_data_path: /opt/postgres/data
+
+backend_port: 8080
+backend_image: Fialovi-lososi-F-CK-AI/backend:latest
+backend_env:
+  DATABASE_URL: "postgres://{{ postgres_user }}:{{ postgres_password }}@localhost:{{ postgres_port }}/{{ postgres_db }}"
+
+prometheus_port: 9090
+grafana_port: 3000
+prometheus_config: /opt/prometheus/prometheus.yml
+
+deploy_user: ansible
+ssh_public_key_path: ~/.ssh/ansible_key.pub
+domain_name: waproject.xyz

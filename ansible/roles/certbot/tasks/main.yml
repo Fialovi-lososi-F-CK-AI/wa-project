@@ -1,0 +1,17 @@
+- name: Install Certbot with Nginx plugin
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: yes
+
+- name: Obtain certificate for domain
+  command: >
+    certbot --nginx
+    --non-interactive
+    --agree-tos
+    --email {{ cert_email }}
+    -d {{ domain_name }}
+  args:
+    creates: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem

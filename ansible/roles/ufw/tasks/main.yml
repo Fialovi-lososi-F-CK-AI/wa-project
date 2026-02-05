@@ -1,0 +1,31 @@
+- name: Allow HTTP
+  ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+
+- name: Allow HTTPS
+  ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+
+- name: Allow monitoring ports (optional)
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "{{ grafana_port }}"
+    - "{{ prometheus_port }}"
+
+- name: Allow ssh
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny
