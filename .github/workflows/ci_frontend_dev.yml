@@ -6,6 +6,7 @@ on:
 
 jobs:
   frontend:
+    name: Frontend CI dev
     runs-on: [self-hosted]
 
     defaults:
