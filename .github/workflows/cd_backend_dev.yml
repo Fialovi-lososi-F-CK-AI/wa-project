@@ -8,8 +8,8 @@ on:
       - 'src/backend/**'
 
 jobs:
-  backend:
-    name: Backend CI
+  backend-cd-dev:
+    name: Backend CD dev
     runs-on: [self-hosted]
     defaults:
       run:
