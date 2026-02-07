@@ -1,8 +1,11 @@
 parameters:
-    level: max
-    paths:
-        - .
-    excludePaths:
-        - %currentWorkingDirectory%/vendor/*
-        - %currentWorkingDirectory%/tests/*
-        - var/cache/*
+  level: max
+  paths:
+    - .
+  excludePaths:
+    - %currentWorkingDirectory%/vendor/*
+    - %currentWorkingDirectory%/tests/*
+    - var/cache/*
+    - vendor/
+    - public/
+    - config/

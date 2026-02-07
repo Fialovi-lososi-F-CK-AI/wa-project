@@ -1,3 +1,44 @@
+- name: Ensure certs dir exists
+  file:
+    path: /home/ansible/certs
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: "0700"
+
+- name: Copy TLS certificate
+  copy:
+    src: /home/icykcypher/local.dev.crt
+    dest: /home/ansible/certs/local.dev.crt
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Copy TLS private key
+  copy:
+    src: /home/icykcypher/local.dev.key
+    dest: /home/ansible/certs/local.dev.key
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Ensure Nginx config dir exists
+  file:
+    path: /opt/nginx
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Render nginx config
+  template:
+    src: default.conf.j2
+    dest: /opt/nginx/default.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart nginx
+
 - name: Run Nginx container
   docker_container:
     name: nginx
@@ -5,10 +46,12 @@
     state: started
     restart_policy: always
     ports:
-      - "{{ nginx_port }}:80"
+      - "80:80"
+      - "443:443"
     volumes:
-      - /opt/app:/usr/share/nginx/html:ro
-      - /etc/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /opt/app/frontend/current:/usr/share/nginx/html:ro
+      - /opt/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - /home/ansible/certs:/etc/nginx/certs:ro
     networks:
       - name: monitoring
 
@@ -18,7 +61,7 @@
     image: nginx/nginx-prometheus-exporter:edge
     state: started
     restart_policy: always
-    command: -nginx.scrape-uri http://nginx:80/nginx_status
+    command: -nginx.scrape-uri https://nginx:443/nginx_status
     ports:
       - "9113:9113"
     networks:
