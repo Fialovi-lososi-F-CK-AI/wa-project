@@ -37,7 +37,9 @@ jobs:
       - name: Write hosts.ini
         run: |
           mkdir -p ansible
-          echo "${{ secrets.ANSIBLE_HOSTS }}" > ansible/hosts.ini
+          cat > ansible/hosts.ini <<EOF
+          ${{ secrets.ANSIBLE_HOSTS }}
+          EOF
 
       - name: Deploy frontend via Ansible (atomic)
         run: |
