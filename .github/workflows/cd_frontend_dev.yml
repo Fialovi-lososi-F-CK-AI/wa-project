@@ -45,5 +45,4 @@ jobs:
           ansible-playbook \
             -i ansible/hosts.ini \
             ansible/deploy_frontend_dev.yml \
-            --private-key key.pem \
-            --vault-password-file <(echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}")
+            --private-key key.pem
