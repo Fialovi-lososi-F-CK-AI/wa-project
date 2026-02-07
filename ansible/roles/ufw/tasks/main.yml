@@ -25,6 +25,12 @@
     port: 22
     proto: tcp
 
+- name: Allow postgres
+  ufw:
+    rule: allow
+    port: 5432
+    proto: tcp
+
 - name: Enable UFW
   ufw:
     state: enabled

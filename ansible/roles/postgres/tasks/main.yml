@@ -1,3 +1,11 @@
+- name: Install system psycopg2
+  apt:
+    name:
+      - python3-psycopg2
+      - libpq-dev
+    state: present
+    update_cache: yes
+
 - name: Run Postgres container
   docker_container:
     name: postgres
@@ -5,15 +13,59 @@
     state: started
     restart_policy: always
     env:
-      POSTGRES_USER: "{{ postgres_user }}"
-      POSTGRES_PASSWORD: "{{ postgres_password }}"
-      POSTGRES_DB: "{{ postgres_db }}"
+      POSTGRES_USER: "{{ postgres_superuser }}"
+      POSTGRES_PASSWORD: "{{ postgres_superpassword }}"
+      POSTGRES_DB: "{{ postgres_superdb }}"
+    command: postgres -c listen_addresses='*'
     ports:
       - "{{ postgres_port }}:5432"
     volumes:
       - "{{ postgres_data_path }}:/var/lib/postgresql/data"
     networks:
       - name: monitoring
+
+- name: Wait for Postgres to be ready
+  wait_for:
+    host: 127.0.0.1
+    port: "{{ postgres_port }}"
+    delay: 5
+    timeout: 60
+
+- name: Ensure PHP backend user exists
+  community.postgresql.postgresql_user:
+    name: "{{ postgres_php_user }}"
+    password: "{{ postgres_php_user_password }}"
+    login_user: "{{ postgres_superuser }}" 
+    login_password: "{{ postgres_superpassword }}"
+    login_host: "127.0.0.1"
+    login_port: "{{ postgres_port }}"
+    login_db: "{{ postgres_superdb }}"       
+    role_attr_flags: "LOGIN"   
+    state: present
+
+- name: Ensure PHP backend DB exists
+  community.postgresql.postgresql_db:
+    name: "{{ postgres_db }}"
+    owner: "{{ postgres_php_user }}"   
+    login_user: "{{ postgres_superuser }}"         
+    login_password: "{{ postgres_superpassword }}"
+    login_host: "127.0.0.1"
+    login_port: "{{ postgres_port }}"
+    maintenance_db: "{{ postgres_superdb }}"        
+    state: present
+
+- name: Grant all privileges on DB to PHP user
+  community.postgresql.postgresql_privs:
+    db: "{{ postgres_db }}"
+    roles: "{{ postgres_php_user }}"
+    type: database
+    privs: ALL
+    login_user: "{{ postgres_superuser }}"
+    login_password: "{{ postgres_superpassword }}"
+    login_host: "127.0.0.1"
+    login_port: "{{ postgres_port }}"
+    login_db: "{{ postgres_superdb }}"
+
 
 - name: Run Postgres exporter container
   docker_container:
@@ -22,7 +74,7 @@
     state: started
     restart_policy: always
     env:
-      DATA_SOURCE_NAME: "postgresql://{{ postgres_user }}:{{ postgres_password }}@postgres:5432/{{ postgres_db }}?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://{{ postgres_php_user }}:{{ postgres_php_user_password }}@postgres:5432/{{ postgres_db }}?sslmode=disable"
     ports:
       - "9187:9187"
     networks:

@@ -1,15 +1,17 @@
 nginx_port: 443
 
 postgres_port: 5432
-postgres_user: prod_user
-postgres_password: "{{ vault_postgres_password }}"  
-postgres_db: prod_db
+postgres_superuser: "{{ vault_postgres_superuser }}"  
+postgres_superpassword: "{{ vault_postgres_superpassword }}"  
+postgres_superdb: "{{ vault_postgres_super_db }}"
+postgres_db: prod
 postgres_data_path: /opt/postgres/data
-
+postgres_php_user: "{{ vault_postgres_php_user }}"
+postgres_php_user_password: "{{ vault_postgres_php_user_password }}"
 backend_port: 8080
 backend_image: Fialovi-lososi-F-CK-AI/backend:latest
 backend_env:
-  DATABASE_URL: "postgres://{{ postgres_user }}:{{ postgres_password }}@localhost:{{ postgres_port }}/{{ postgres_db }}"
+  DATABASE_URL: "postgres://{{ postgres_php_user }}:{{ postgres_php_user_password }}@localhost:{{ postgres_port }}/{{ postgres_db }}"
 
 prometheus_port: 9090
 grafana_port: 3000
