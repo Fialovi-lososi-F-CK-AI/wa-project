@@ -31,7 +31,7 @@ jobs:
 
       - name: Write SSH private key
         run: |
-          echo "${{ secrets.ANSIBLE_SSH_KEY }}" > key.pem
+          echo "${{ secrets.ANSIBLE_SSH_KEY_B64 }}" | base64 -d > key.pem
           chmod 600 key.pem
 
       - name: Deploy frontend via Ansible (atomic)
