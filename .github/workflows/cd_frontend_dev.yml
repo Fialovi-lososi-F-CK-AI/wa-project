@@ -9,7 +9,8 @@ on:
 jobs:
   frontend-cd-dev:
     runs-on: [self-hosted]
-
+    environment: dev
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
