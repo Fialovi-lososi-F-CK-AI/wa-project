@@ -1,4 +1,4 @@
-00name: CD frontend dev
+name: CD frontend dev
 
 on:
   push:
