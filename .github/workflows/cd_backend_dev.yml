@@ -45,6 +45,11 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
 
+      - name: Write hosts.ini
+        run: |
+          mkdir -p ansible
+          echo "${{ secrets.ANSIBLE_HOSTS }}" > ansible/hosts.ini
+
       - name: Deploy to dev via Ansible
         run: |
           echo "${{ secrets.ANSIBLE_SSH_KEY }}" > key.pem
