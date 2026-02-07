@@ -41,6 +41,7 @@ jobs:
 
       - name: Deploy frontend via Ansible (atomic)
         run: |
+          source /opt/gh-runners/ansible_venv/bin/activate
           ansible-playbook \
             -i ansible/hosts.ini \
             ansible/deploy_frontend_dev.yml \
