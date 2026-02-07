@@ -10,7 +10,7 @@
     release_name: "{{ ansible_date_time.iso8601_basic }}"
     release_dir: "{{ releases_dir }}/{{ release_name }}"
     keep_releases: 5
-
+    
   tasks:
     - name: Rollback to specific release (manual)
       file:
@@ -44,7 +44,7 @@
 
     - name: Upload frontend build (dist)
       copy:
-        src: src/frontend/dist/
+        src: "{{ playbook_dir }}/../src/frontend/dist/"
         dest: "{{ release_dir }}/"
         owner: root
         group: root
