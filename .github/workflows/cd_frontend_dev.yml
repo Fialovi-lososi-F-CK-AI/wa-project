@@ -33,18 +33,11 @@ jobs:
         run: |
           echo "${{ secrets.ANSIBLE_SSH_KEY }}" > key.pem
           chmod 600 key.pem
-          
-      - name: Write hosts.ini
-        run: |
-          mkdir -p ansible
-          cat > ansible/hosts.ini <<EOF
-          ${{ secrets.ANSIBLE_HOSTS }}
-          EOF
 
-      - name: Deploy frontend via Ansible (atomic)
+      - name: Deploy frontend via Ansible (inline inventory)
         run: |
-          source /opt/gh-runners/ansible_venv/bin/activate
+          source /opt/gh-runner/ansible_venv/bin/activate
+      
           ansible-playbook \
-            -i ansible/hosts.ini \
-            ansible/deploy_frontend_dev.yml \
-            --private-key key.pem
+            -i "dev-node ansible_host=192.168.1.167 ansible_user=ansible ansible_ssh_private_key_file=key.pem," \
+            ansible/deploy_frontend_dev.yml
