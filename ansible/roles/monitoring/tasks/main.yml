@@ -56,7 +56,9 @@
       - "{{ grafana_port }}:3000"
     env:
       GF_SECURITY_ADMIN_PASSWORD: "{{ vault_grafana_password }}"
-      GF_SERVER_ROOT_URL: "http://192.168.1.167:{{ grafana_port }}"
+      GF_SERVER_ROOT_URL: "http://local.dev/grafana"
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     volumes:
       - /opt/grafana:/var/lib/grafana
+    networks:
+      - name: monitoring

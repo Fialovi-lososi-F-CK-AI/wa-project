@@ -2,32 +2,42 @@ name: CD frontend dev
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'src/frontend/**'
 
 jobs:
   frontend-cd-dev:
-    name: CD frontend dev
     runs-on: [self-hosted]
-    defaults:
-      run:
-        working-directory: src/frontend
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
+        working-directory: src/frontend
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Build frontend
+        working-directory: src/frontend
+        run: npm run build
 
-      - name: Run frontend tests
-        run: npm run test
+      - name: Write SSH private key
+        run: |
+          echo "${{ secrets.ANSIBLE_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Deploy frontend via Ansible (atomic)
+        run: |
+          ansible-playbook \
+            -i ansible/hosts.ini \
+            ansible/deploy_frontend_dev.yml \
+            --private-key key.pem \
+            --vault-password-file <(echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}")

@@ -1,0 +1,4 @@
+artprima_prometheus_metrics:
+    namespace: backend
+    storage: 
+        type: in_memory
