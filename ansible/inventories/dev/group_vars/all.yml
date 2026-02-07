@@ -1,4 +1,4 @@
-nginx_port: 8080
+nginx_port: 443
 
 postgres_port: 5432
 postgres_user: prod_user
@@ -17,4 +17,4 @@ prometheus_config: /opt/prometheus/prometheus.yml
 
 deploy_user: ansible
 ssh_public_key_path: ~/.ssh/ansible_key.pub
-domain_name: waproject.xyz
+domain_name: debian-1.tail0adfcb.ts.net

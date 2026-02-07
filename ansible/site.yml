@@ -8,10 +8,10 @@
     - users
     - ssh_hardening
     - docker
-    - app
     - postgres
     #- backend
     - nginx
     #- certbot
     - monitoring
     - ufw
+    - app
