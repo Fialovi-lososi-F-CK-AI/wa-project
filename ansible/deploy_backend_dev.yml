@@ -1,0 +1,83 @@
+- name: Atomic backend deploy (Symfony Docker, zero downtime)
+  hosts: dev-node
+  become: true
+
+  vars:
+    backend_name: backend
+    slots: ["blue", "green"]
+    ports:
+      blue: 5001
+      green: 5002
+    nginx_conf: /etc/nginx/conf.d/backend.conf
+    active_slot_file: /opt/app/backend/active_slot
+
+  tasks:
+    - name: Read active slot
+      slurp:
+        src: "{{ active_slot_file }}"
+      register: slot_file
+      ignore_errors: true
+
+    - name: Set active slot
+      set_fact:
+        active_slot: "{{ (slot_file.content | b64decode).strip() }}"
+      when: slot_file is defined and slot_file.content is defined
+
+    - name: Default active slot to blue
+      set_fact:
+        active_slot: blue
+      when: active_slot is not defined
+
+    - name: Set inactive slot
+      set_fact:
+        inactive_slot: "{{ (slots | difference([active_slot]))[0] }}"
+
+    - name: Start new backend container ({{ inactive_slot }})
+      docker_container:
+        name: "{{ backend_name }}_{{ inactive_slot }}"
+        image: "{{ backend_image }}"
+        state: started
+        recreate: true
+        restart_policy: unless-stopped
+        published_ports:
+          - "{{ ports[inactive_slot] }}:9000"
+        env:
+          APP_ENV: "prod"
+          DATABASE_URL: "{{ symfony_database_url }}"
+          MAILER_DSN: "{{ symfony_mailer_dsn }}"
+          API_KEY: "{{ api_key }}"
+
+    - name: Wait for backend healthcheck
+      uri:
+        url: "http://127.0.0.1:{{ ports[inactive_slot] }}/health"
+        status_code: 200
+      retries: 12
+      delay: 5
+      register: health
+      until: health.status == 200 and health.content is search("ok")
+
+    - name: Update nginx upstream
+      template:
+        src: backend.conf.j2
+        dest: "{{ nginx_conf }}"
+      vars:
+        backend_port: "{{ ports[inactive_slot] }}"
+
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+
+    - name: Stop old backend container ({{ active_slot }})
+      docker_container:
+        name: "{{ backend_name }}_{{ active_slot }}"
+        state: stopped
+      ignore_errors: true
+
+    - name: Persist active slot
+      copy:
+        content: "{{ inactive_slot }}"
+        dest: "{{ active_slot_file }}"
+        owner: root
+        group: root
+        mode: "0644"
