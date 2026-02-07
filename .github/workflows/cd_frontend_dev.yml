@@ -37,7 +37,9 @@ jobs:
       - name: Deploy frontend via Ansible (inline inventory)
         run: |
           source /opt/gh-runner/ansible_venv/bin/activate
-      
+          mkdir -p ansible
+          echo "[dev]" > ansible/hosts.ini
+          echo "dev-node ansible_host=100.74.188.26 ansible_user=ansible ansible_ssh_private_key_file=key.pem" >> ansible/hosts.ini
           ansible-playbook \
-            -i "dev-node ansible_host=192.168.1.167 ansible_user=ansible ansible_ssh_private_key_file=key.pem," \
+            -i ansible/hosts.ini \
             ansible/deploy_frontend_dev.yml
