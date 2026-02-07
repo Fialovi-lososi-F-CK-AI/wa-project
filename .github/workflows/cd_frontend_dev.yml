@@ -1,4 +1,4 @@
-name: CD frontend dev
+00name: CD frontend dev
 
 on:
   push:
@@ -33,6 +33,11 @@ jobs:
         run: |
           echo "${{ secrets.ANSIBLE_SSH_KEY }}" > key.pem
           chmod 600 key.pem
+          
+      - name: Write hosts.ini
+        run: |
+          mkdir -p ansible
+          echo "${{ secrets.ANSIBLE_HOSTS }}" > ansible/hosts.ini
 
       - name: Deploy frontend via Ansible (atomic)
         run: |
