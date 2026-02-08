@@ -85,7 +85,7 @@
 
     - name: Wait for Nginx to be ready
       wait_for:
-        host: https://localhost/
+        host: localhost
         port: 443
         delay: 1
         timeout: 10
@@ -94,7 +94,9 @@
       uri:
         url: https://localhost/
         status_code: 200
-        validate_certs: false
+        validate_certs: no
+        headers:
+          Host: local.dev
       when: rollback_release is not defined
 
     - name: Cleanup old releases (keep last {{ keep_releases }})
