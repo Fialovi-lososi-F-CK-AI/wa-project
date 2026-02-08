@@ -86,7 +86,7 @@
     - name: Wait for Nginx to be ready
       wait_for:
         host: https://localhost/
-        port: "{{ nginx_port }}"
+        port: 443
         delay: 1
         timeout: 10
 
