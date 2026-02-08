@@ -60,6 +60,6 @@ jobs:
 
           ansible-playbook \
             -i ansible/hosts.ini \
-            ansible/deploy_backend.yml \
+            ansible/deploy_backend_dev.yml \
             --private-key key.pem \
             --extra-vars "backend_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} symfony_database_url=${{ secrets.SYMFONY_DATABASE_URL }} api_key=${{ secrets.API_KEY }}"
