@@ -21,7 +21,7 @@ class Kernel extends BaseKernel
         ];
 
         foreach ($bundles as $bundle) { 
-            yield $bundle; 
+            yield $bundle;  
         } 
     }
 
