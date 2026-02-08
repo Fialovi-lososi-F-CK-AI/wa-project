@@ -53,7 +53,8 @@
         src: /tmp/frontend.tar.gz
         dest: "{{ release_dir }}"
         remote_src: true
-      when: rollback_release is not defined
+        extra_opts:
+          - --strip-components=1
 
     - name: Verify index.html exists
       stat:
