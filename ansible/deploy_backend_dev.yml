@@ -12,13 +12,19 @@
     active_slot_file: /opt/app/backend/active_slot
 
   tasks:
-    - name: Ensure backend active slot directory exists
+    - name: Ensure backend directory exists
       file:
-        path: /opt/app/backend/active_slot
+        path: /opt/app/backend
         state: directory
         owner: root
         group: root
         mode: "0755"
+    
+    - name: Login to GHCR
+      docker_login:
+        registry_url: ghcr.io
+        username: "{{ gh_username }}"
+        password: "{{ ghcr_pat }}"
 
     - name: Read active slot
       slurp:
