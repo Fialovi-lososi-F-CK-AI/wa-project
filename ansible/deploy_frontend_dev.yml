@@ -78,6 +78,13 @@
         name: nginx
         state: restarted
 
+    - name: Wait for Nginx to be ready
+      wait_for:
+        host: https://localhost/
+        port: "{{ nginx_port }}"
+        delay: 1
+        timeout: 10
+
     - name: Check frontend is reachable
       uri:
         url: https://localhost/
