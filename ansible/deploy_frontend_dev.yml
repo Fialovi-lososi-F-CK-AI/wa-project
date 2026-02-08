@@ -73,9 +73,10 @@
         force: true
       when: rollback_release is not defined
 
-    - name: Reload nginx (zero-downtime)
-      shell: docker exec nginx nginx -s reload
-      when: rollback_release is not defined
+    - name: Restart nginx container
+      docker_container:
+        name: nginx
+        state: restarted
 
     - name: Check frontend is reachable
       uri:
