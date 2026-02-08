@@ -73,10 +73,15 @@
         force: true
       when: rollback_release is not defined
 
-    - name: Restart nginx container
+    - name: Stop nginx container
       docker_container:
         name: nginx
-        state: restarted
+        state: stopped
+
+    - name: Start nginx container
+      docker_container:
+        name: nginx
+        state: started
 
     - name: Wait for Nginx to be ready
       wait_for:
