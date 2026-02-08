@@ -48,6 +48,11 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
 
+      - name: Write SSH private key
+        run: |
+          echo "${{ secrets.ANSIBLE_SSH_KEY }}" | base64 -d > key.pem
+          chmod 600 key.pem
+
       - name: Write hosts.ini
         run: |
           mkdir -p ansible
@@ -55,9 +60,6 @@ jobs:
 
       - name: Deploy to dev via Ansible
         run: |
-          echo "${{ secrets.ANSIBLE_SSH_KEY }}" > key.pem
-          chmod 600 key.pem
-
           ansible-playbook \
             -i ansible/hosts.ini \
             ansible/deploy_backend_dev.yml \
