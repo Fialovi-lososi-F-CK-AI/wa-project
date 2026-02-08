@@ -16,7 +16,7 @@ class Kernel extends BaseKernel
     public function registerBundles(): iterable
     {
         $bundles = [
-            new FrameworkBundle(),
+            new FrameworkBundle(), 
             new ArtprimaPrometheusMetricsBundle(),   
         ];
 
