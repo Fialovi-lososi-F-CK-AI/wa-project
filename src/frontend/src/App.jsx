@@ -26,7 +26,7 @@ function App() {
         </p>
       </div>
       <p className="read-the-docs">
-        Giganiga #7 
+        Giganiga #7  
       </p>
     </>
   )
