@@ -22,7 +22,7 @@ class Kernel extends BaseKernel
 
         foreach ($bundles as $bundle) { 
             yield $bundle; 
-        }
+        } 
     }
 
     protected function configureContainer(ContainerConfigurator $container): void
