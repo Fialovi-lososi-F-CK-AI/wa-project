@@ -20,7 +20,7 @@ class Kernel extends BaseKernel
             new ArtprimaPrometheusMetricsBundle(),   
         ];
 
-        foreach ($bundles as $bundle) {
+        foreach ($bundles as $bundle) { 
             yield $bundle;
         }
     }
