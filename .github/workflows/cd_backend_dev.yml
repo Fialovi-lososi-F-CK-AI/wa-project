@@ -13,7 +13,10 @@ env:
 jobs:
   backend-cd-dev:
     runs-on: [self-hosted]
-
+    environment: dev
+    permissions:
+      contents: write
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
