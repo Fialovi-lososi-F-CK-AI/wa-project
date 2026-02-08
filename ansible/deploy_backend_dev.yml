@@ -68,6 +68,8 @@
           APP_ENV: "prod"
           DATABASE_URL: "{{ symfony_database_url }}"
           API_KEY: "{{ api_key }}"
+        networks:
+          - name: monitoring
 
     - name: Wait for backend healthcheck
       uri:
