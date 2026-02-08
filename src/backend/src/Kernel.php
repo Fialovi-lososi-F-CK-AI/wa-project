@@ -17,7 +17,7 @@ class Kernel extends BaseKernel
     {
         $bundles = [
             new FrameworkBundle(),
-            new ArtprimaPrometheusMetricsBundle(),  
+            new ArtprimaPrometheusMetricsBundle(),   
         ];
 
         foreach ($bundles as $bundle) {
