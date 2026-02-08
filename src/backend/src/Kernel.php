@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 class Kernel extends BaseKernel
 {
-    use MicroKernelTrait;
+    use MicroKernelTrait; 
 
     public function registerBundles(): iterable
     {
