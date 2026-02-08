@@ -53,13 +53,13 @@ jobs:
           echo "${{ secrets.ANSIBLE_SSH_KEY }}" | base64 -d > key.pem
           chmod 600 key.pem
 
-      - name: Write hosts.ini
-        run: |
-          mkdir -p ansible
-          echo "${{ secrets.ANSIBLE_HOSTS }}" > ansible/hosts.ini
-
       - name: Deploy to dev via Ansible
         run: |
+          source /opt/gh-runner/ansible_venv/bin/activate
+          mkdir -p ansible
+          echo "[dev]" > ansible/hosts.ini
+          echo "dev-node ansible_host=100.74.188.26 ansible_user=ansible ansible_ssh_private_key_file=key.pem" >> ansible/hosts.ini
+          ssh-keyscan -H 100.74.188.26 >> ~/.ssh/known_hosts
           ansible-playbook \
             -i ansible/hosts.ini \
             ansible/deploy_backend_dev.yml \
