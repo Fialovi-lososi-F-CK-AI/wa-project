@@ -9,7 +9,7 @@ class PasswordService
     public function __construct()
     {
         $this->key = getenv('AES_KEY') ?: 'defaultkey';
-        $this->iv = getenv('AES_IV') ?: 'defaultiv1234567';
+        $this->iv  = getenv('AES_IV') ?: 'defaultiv1234567';
     }
 
     public function encrypt(string $text): string
