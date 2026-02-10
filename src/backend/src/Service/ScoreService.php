@@ -22,15 +22,13 @@ class ScoreService
         if (!$user) return ['error'=>'User not found'];
 
         $existingScore = $this->scoreRepo->findByUserId($user->id);
-
         if ($existingScore) {
             if ($score > $existingScore->score) {
                 $existingScore->score = $score;
                 $this->scoreRepo->save($existingScore);
             }
         } else {
-            $newScore = new Score($user->id, $score);
-            $this->scoreRepo->save($newScore);
+            $this->scoreRepo->save(new Score($user->id, $score));
         }
 
         return ['status'=>'saved'];
