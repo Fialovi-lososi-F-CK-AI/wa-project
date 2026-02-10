@@ -18,9 +18,10 @@ VOLUME /app/var/
 # persistent / runtime deps
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-	file \
-	git \
-	&& rm -rf /var/lib/apt/lists/*
+    git unzip curl bash autoconf build-essential gcc g++ make \
+    icu-devtools libicu-dev libzip-dev zlib1g-dev libpq-dev \
+    && rm -rf /var/lib/apt/lists/* \
+ && install-php-extensions @composer apcu intl opcache zip pdo_pgsql
 
 RUN set -eux; \
     install-php-extensions \
