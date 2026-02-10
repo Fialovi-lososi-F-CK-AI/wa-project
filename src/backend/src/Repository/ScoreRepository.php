@@ -2,23 +2,22 @@
 namespace App\Repository;
 
 use App\Entity\Score;
-use PDO;
+use App\Service\DatabaseService;
 
 class ScoreRepository
 {
-    private PDO $pdo;
+    private DatabaseService $db;
 
-    public function __construct(PDO $pdo)
+    public function __construct(DatabaseService $db)
     {
-        $this->pdo = $pdo;
+        $this->db = $db;
     }
 
     public function findByUserId(int $userId): ?Score
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM scores WHERE user_id=:u");
+        $stmt = $this->db->getPDO()->prepare("SELECT * FROM scores WHERE user_id=:u");
         $stmt->execute(['u'=>$userId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (!$row) return null;
 
         $score = new Score($row['user_id'], $row['score']);
@@ -29,19 +28,19 @@ class ScoreRepository
     public function save(Score $score): bool
     {
         if ($score->id) {
-            $stmt = $this->pdo->prepare("UPDATE scores SET score=:s WHERE id=:id");
+            $stmt = $this->db->getPDO()->prepare("UPDATE scores SET score=:s WHERE id=:id");
             return $stmt->execute(['s'=>$score->score, 'id'=>$score->id]);
         } else {
-            $stmt = $this->pdo->prepare("INSERT INTO scores (user_id, score) VALUES (:u,:s)");
+            $stmt = $this->db->getPDO()->prepare("INSERT INTO scores (user_id, score) VALUES (:u,:s)");
             $result = $stmt->execute(['u'=>$score->userId, 's'=>$score->score]);
-            $score->id = (int)$this->pdo->lastInsertId();
+            $score->id = (int)$this->db->getPDO()->lastInsertId();
             return $result;
         }
     }
 
     public function getTop5(): array
     {
-        $stmt = $this->pdo->query("
+        $stmt = $this->db->getPDO()->query("
             SELECT u.username, MAX(s.score) AS score
             FROM scores s
             JOIN users u ON u.id = s.user_id
@@ -49,6 +48,6 @@ class ScoreRepository
             ORDER BY score DESC
             LIMIT 5
         ");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
