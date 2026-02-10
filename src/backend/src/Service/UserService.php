@@ -17,8 +17,9 @@ class UserService
 
     public function register(string $username, string $password): array
     {
-        $existing = $this->repo->findByUsername($username);
-        if ($existing) return ['error'=>'User exists'];
+        if ($this->repo->findByUsername($username)) {
+            return ['error'=>'User exists'];
+        }
 
         $encrypted = $this->passwordService->encrypt($password);
         $user = new User($username, $encrypted);
