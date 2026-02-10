@@ -63,7 +63,7 @@
         recreate: true
         restart_policy: unless-stopped
         published_ports:
-          - "{{ ports[inactive_slot] }}:9000"
+          - "{{ ports[inactive_slot] }}:80"
         env:
           APP_ENV: "prod"
           DATABASE_URL: "{{ symfony_database_url }}"
