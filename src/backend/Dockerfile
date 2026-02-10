@@ -1,57 +1,89 @@
-FROM php:8.2-fpm-alpine AS builder
+#syntax=docker/dockerfile:1
 
-RUN apk add --no-cache \
-    git \
-    unzip \
-    curl \
-    bash \
-    icu-dev \
-    libzip-dev \
-    oniguruma-dev \
-    zlib-dev \
-    postgresql-dev \
-    autoconf \
-    gcc \
-    g++ \
-    make
+# Versions
+FROM dunglas/frankenphp:1-php8.2 AS frankenphp_upstream
 
-RUN docker-php-ext-install pdo pdo_pgsql intl zip opcache
+# The different stages of this Dockerfile are meant to be built into separate images
+# https://docs.docker.com/develop/develop-images/multistage-build/#stop-at-a-specific-build-stage
+# https://docs.docker.com/compose/compose-file/#target
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Base FrankenPHP image
+FROM frankenphp_upstream AS frankenphp_base
 
 WORKDIR /app
 
-COPY . .
+VOLUME /app/var/
 
-RUN which composer && composer --version
+# persistent / runtime deps
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	file \
+	git \
+	&& rm -rf /var/lib/apt/lists/*
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN set -eux; \
+    install-php-extensions \
+        @composer \
+        apcu \
+        intl \
+        opcache \
+        zip \
+        postgresql-dev \
+    ;
 
-COPY . .
+# https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
-FROM php:8.2-fpm-alpine
+ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
 
-RUN apk add --no-cache icu libzip zlib bash postgresql-client
+###> recipes ###
+###< recipes ###
 
-COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
-COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+COPY --link frankenphp/conf.d/10-app.ini $PHP_INI_DIR/app.conf.d/
+COPY --link --chmod=755 frankenphp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+COPY --link frankenphp/Caddyfile /etc/frankenphp/Caddyfile
 
-WORKDIR /app
-COPY --from=builder /app /app
+ENTRYPOINT ["docker-entrypoint"]
 
-RUN mkdir -p var/cache var/log \
-    && chown -R www-data:www-data var
+# Dev FrankenPHP image
+FROM frankenphp_base AS frankenphp_dev
 
-RUN { \
-        echo 'opcache.enable=1'; \
-        echo 'opcache.memory_consumption=128'; \
-        echo 'opcache.interned_strings_buffer=8'; \
-        echo 'opcache.max_accelerated_files=10000'; \
-        echo 'opcache.validate_timestamps=0'; \
-    } > /usr/local/etc/php/conf.d/opcache.ini
+ENV APP_ENV=dev
+ENV XDEBUG_MODE=off
+ENV FRANKENPHP_WORKER_CONFIG=watch
 
-USER www-data
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
-EXPOSE 9000
+RUN set -eux; \
+	install-php-extensions \
+		xdebug \
+	;
 
-CMD ["php-fpm"]
+COPY --link frankenphp/conf.d/20-app.dev.ini $PHP_INI_DIR/app.conf.d/
+
+EXPOSE 80
+
+CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile" ]
+
+# Prod FrankenPHP image
+FROM frankenphp_base AS frankenphp_prod
+
+ENV APP_ENV=prod
+
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+COPY --link frankenphp/conf.d/20-app.prod.ini $PHP_INI_DIR/app.conf.d/
+
+# prevent the reinstallation of vendors at every changes in the source code
+COPY --link composer.* symfony.* ./
+RUN set -eux; \
+	composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
+
+# copy sources
+COPY --link --exclude=frankenphp/ . ./
+
+RUN set -eux; \
+    mkdir -p var/cache var/log var/share; \
+    composer dump-autoload --classmap-authoritative --no-dev; \
+    chmod +x bin/console
