@@ -70,7 +70,6 @@
           API_KEY: "{{ api_key }}"
         networks:
           - name: monitoring
-        command: serve /var/www/html --port 9000
 
     - name: Wait for backend healthcheck
       uri:
