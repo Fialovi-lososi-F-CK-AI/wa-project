@@ -37,6 +37,7 @@ COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions
 COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 
 WORKDIR /app
+
 COPY --from=builder /app /app
 
 RUN mkdir -p var/cache var/log \
